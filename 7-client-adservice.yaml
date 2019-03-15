@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Client AD Stack'
+Parameters:
+  VPCStackName:
+    Description: >-
+      Name of an active CloudFormation stack that contains the VPC networking
+      resources, such as the route table, subnet and security group, that will be used in
+      this stack.
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
+    Default: client-vpc
+  
+  Client:
+    Description: 'Client Name to tag resources with: Note must be lowercase!'
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-z]*'
+    ConstraintDescription: any alphabetic string (1-16) characters in length
+    Default: client
+  
+  MicrosoftADname:
+    AllowedPattern: '[a-zA-Z0-9\-]+\..+'
+    Default: example.com
+    Description: >-
+      Fully qualified domain name (FQDN) of the forest root domain; e.g., example.com.
+    MaxLength: '255'
+    MinLength: '2'
+    Type: String
+
+  MicrosoftADpwd:
+    AllowedPattern: >-
+      (?=^.{6,255}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*
+    Description: >-
+      Password for the domain admin user. Must be at least 8 characters
+      and contain letters, numbers, and symbols.
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+  
+  MicrosoftADshortname: 
+    AllowedPattern: '[a-zA-Z0-9\-]+'
+    Default: example
+    Description: >-
+      NetBIOS name of the domain (up to 15 characters) for users of earlier
+      versions of Windows; e.g., example.
+    MaxLength: '15'
+    MinLength: '1'
+    Type: String
+    
+Resources: 
+  ADStack: 
+    Type: AWS::DirectoryService::MicrosoftAD
+    Properties: 
+      Name: 
+        Ref: MicrosoftADname
+      Password: 
+        Ref: MicrosoftADpwd
+      ShortName: 
+        Ref: MicrosoftADshortname
+      VpcSettings: 
+        SubnetIds:
+          - !ImportValue 
+              'Fn::Sub': '${VPCStackName}-SubnetAPrivate'
+          - !ImportValue 
+              'Fn::Sub': '${VPCStackName}-SubnetBPrivate'
+        VpcId:
+          Fn::ImportValue:
+            !Sub "${VPCStackName}-VpcId"
+
+        
