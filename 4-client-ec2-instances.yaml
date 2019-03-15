@@ -1,0 +1,542 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Client EC2 CloudFormation Stack. Template will deploy RDS, Hana and option to add Hwin and Int Servers. M
+Mappings:
+  RegionMap:
+    us-east-1: #N.Virginia
+      RDS: ami-07a29e78aeb420471
+      INT: ami-07a29e78aeb420471
+      HANA: ami-03adb8813ffd80f0b
+      HWIN: ami-07a29e78aeb420471
+    us-east-2: #Ohio
+      RDS: ami-019cbfce4a7f8847f
+      INT: ami-019cbfce4a7f8847f
+      HANA: ami-0479b39f2d07530fb
+      HWIN: ami-019cbfce4a7f8847f
+        
+Parameters:
+  VPCStackName:
+    Description: >-
+      Name of an active CloudFormation stack that contains the VPC networking
+      resources.
+    Type: String
+    MinLength: '1'
+    MaxLength: '255'
+    AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
+
+  SecurityGroupsStackName:
+    Description: >-
+      Name of an active CloudFormation stack that contains all the Security Groups
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
+    Default: SecurityGroups
+    
+  EnvName:
+    Description: 'Client Name to tag resources with: Note must be lowercase!'
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-z]*'
+    ConstraintDescription: any alphabetic string (1-16) characters in length
+  
+  IntegrationServer:
+    Description: Install (Yes) or don't install (No) Optional Integration Server.
+    Type: String
+    AllowedValues: 
+      - 'Yes'
+      - 'No'
+  HwindowsServer:
+    Description: Install (Yes) or don't install (No) Optional HWIN Server.
+    Type: String
+    AllowedValues: 
+      - 'Yes'
+      - 'No'
+
+  RDSServerType:
+    Description: RDS Instance Type
+    Type: String
+    AllowedValues:
+      - t2.micro
+      - t2.large
+      - r4.large
+      - r4.xlarge
+      - r4.2xlarge
+      - r4.4xlarge
+    Description: Select Instance Size
+  
+  NumberOfRDS:
+    AllowedValues:
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+    Description: Enter the number of Remote Desktop Servers to create
+    Type: String
+
+  HANAServerType:
+    Description: HANA Instance Type
+    Type: String
+    AllowedValues:
+      - t2.large
+      - c3.8xlarge
+      - m4.10xlarge
+      - m4.16xlarge
+      - r3.8xlarge
+      - x1.16xlarge
+    Description: Select Instance Size
+
+  HANAStorageSize:  
+    Description : Disk Size for Hana DB 
+    Type: Number
+    
+  HWINServerType:
+    Description: HWIN Instance Type
+    Type: String
+    AllowedValues:
+      - t2.large
+      - r4.large
+      - r4.xlarge
+      - r4.2xlarge
+      - r4.4xlarge
+    Description: Select Instance Size
+  INTServerType:
+    Description: Integration Instance Type
+    Type: String
+    AllowedValues:
+      - t2.large
+      - r4.large
+      - r4.xlarge
+      - r4.2xlarge
+      - r4.4xlarge
+    Description: Select Instance Size
+  ClientKeyPair: 
+    Description: Public/Private key pairs allow you to securely connect to your intance after it launches
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: ''
+
+Conditions: 
+  NeedIntegrationServer: !Equals
+    - !Ref IntegrationServer
+    - 'Yes'
+  NeedHWINServer: !Equals
+    - !Ref HwindowsServer
+    - 'Yes'
+
+  2RDSCondition: !Or
+    - !Equals
+      - !Ref NumberOfRDS
+      - '2'
+    - !Condition 3RDSCondition 
+    - !Condition 4RDSCondition
+    - !Condition 5RDSCondition
+  3RDSCondition: !Or
+    - !Equals
+      - !Ref NumberOfRDS
+      - '3'
+    - !Condition 4RDSCondition 
+    - !Condition 5RDSCondition
+  4RDSCondition: !Or
+    - !Equals
+      - !Ref NumberOfRDS
+      - '4'
+    - !Condition 5RDSCondition 
+  5RDSCondition: !Equals
+    - !Ref NumberOfRDS
+    - '5'
+
+Resources:
+  
+  RDSServer1:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - RDS
+      InstanceType: !Ref RDSServerType
+      KeyName: !Ref ClientKeyPair
+      Monitoring: 'false'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: '100'
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeSize: '150'
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${VPCStackName}-SubnetAPublic'
+          GroupSet:
+            - !ImportValue
+                'Fn::Sub': '${SecurityGroupsStackName}-RDSSecurityGroup'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - .
+            - - !Ref EnvName
+              - RDS01
+            
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  RDSServer2:
+    Condition: 2RDSCondition
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - RDS
+      InstanceType: !Ref RDSServerType
+      KeyName: !Ref ClientKeyPair
+      Monitoring: 'false'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: '150'
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeSize: '150'
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${VPCStackName}-SubnetBPublic'
+          GroupSet:
+            - !ImportValue
+                'Fn::Sub': '${SecurityGroupsStackName}-RDSSecurityGroup'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - .
+            - - !Ref EnvName
+              - RDS02
+            
+        - Key: EnvName
+          Value: !Ref EnvName
+  
+  RDSServer3:
+    Condition: 3RDSCondition
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - RDS
+      InstanceType: !Ref RDSServerType
+      KeyName: !Ref ClientKeyPair
+      Monitoring: 'false'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: '150'
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeSize: '150'
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${VPCStackName}-SubnetAPublic'
+          GroupSet:
+            - !ImportValue
+                'Fn::Sub': '${SecurityGroupsStackName}-RDSSecurityGroup'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - .
+            - - !Ref EnvName
+              - RDS03
+            
+        - Key: EnvName
+          Value: !Ref EnvName
+  
+  RDSServer4:
+    Condition: 4RDSCondition
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - RDS
+      InstanceType: !Ref RDSServerType
+      KeyName: !Ref ClientKeyPair
+      Monitoring: 'false'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: '150'
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeSize: '150'
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${VPCStackName}-SubnetBPublic'
+          GroupSet:
+            - !ImportValue
+                'Fn::Sub': '${SecurityGroupsStackName}-RDSSecurityGroup'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - .
+            - - !Ref EnvName
+              - RDS04
+            
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  RDSServer5:
+    Condition: 5RDSCondition
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - RDS
+      InstanceType: !Ref RDSServerType
+      KeyName: !Ref ClientKeyPair
+      Monitoring: 'false'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: '150'
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeSize: '150'
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${VPCStackName}-SubnetAPublic'
+          GroupSet:
+            - !ImportValue
+                'Fn::Sub': '${SecurityGroupsStackName}-RDSSecurityGroup'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - .
+            - - !Ref EnvName
+              - RDS05
+            
+        - Key: EnvName
+          Value: !Ref EnvName
+  RDSServerEIP1:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      InstanceId: !Ref RDSServer1
+  RDSServer2EIP:
+    Type: 'AWS::EC2::EIP'
+    Condition: 2RDSCondition
+    Properties:
+      InstanceId: !Ref RDSServer2
+      
+  RDSServer3EIP:
+    Type: 'AWS::EC2::EIP'
+    Condition: 3RDSCondition
+    Properties:
+      InstanceId: !Ref RDSServer3
+      
+  RDSServer4EIP:
+    Type: 'AWS::EC2::EIP'
+    Condition: 4RDSCondition
+    Properties:
+      InstanceId: !Ref RDSServer4
+      
+  RDSServer5EIP:
+    Type: 'AWS::EC2::EIP'
+    Condition: 5RDSCondition
+    Properties:
+      InstanceId: !Ref RDSServer5
+      
+  HANAServer:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - HANA
+      InstanceType: !Ref RDSServerType
+      KeyName: !Ref ClientKeyPair
+      Monitoring: 'false'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: '150'
+        - DeviceName: /dev/sdf
+          Ebs:
+            DeleteOnTermination: true
+            VolumeSize: !Ref HANAStorageSize
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${VPCStackName}-SubnetAPrivate'
+          GroupSet:
+            - !ImportValue
+                'Fn::Sub': '${SecurityGroupsStackName}-HANASecurityGroup'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - .
+            - - !Ref EnvName
+              - HANA
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  HWINServer:
+    Condition: NeedHWINServer
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - HWIN
+      InstanceType: !Ref HWINServerType
+      KeyName: !Ref ClientKeyPair
+      Monitoring: 'false'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: '150'
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeSize: '150'
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${VPCStackName}-SubnetAPrivate'
+          GroupSet:
+            - !ImportValue
+                'Fn::Sub': '${SecurityGroupsStackName}-HWINSecurityGroup'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - .
+            - - !Ref EnvName
+              - HWIN
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  INTServer:
+    Condition: NeedIntegrationServer
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      DisableApiTermination: 'false'
+      InstanceInitiatedShutdownBehavior: stop
+      ImageId: !FindInMap 
+        - RegionMap
+        - !Ref 'AWS::Region'
+        - INT
+      InstanceType: !Ref INTServerType
+      KeyName: !Ref ClientKeyPair
+      Monitoring: 'false'
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: '150'
+        - DeviceName: /dev/sdf
+          Ebs:
+            VolumeSize: '150'
+      NetworkInterfaces:
+        - DeleteOnTermination: 'true'
+          DeviceIndex: 0
+          SubnetId: !ImportValue
+            'Fn::Sub': '${VPCStackName}-SubnetAPublic'
+          GroupSet:
+            - !ImportValue
+                'Fn::Sub': '${SecurityGroupsStackName}-INTSecurityGroup'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - .
+            - - !Ref EnvName
+              - INT
+        - Key: EnvName
+          Value: !Ref EnvName
+  INTServerEIP:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      InstanceId: !Ref INTServer
+  
+Outputs:
+  StackName:
+    Value: !Ref AWS::StackName
+  
+  RDSServer1:
+    Description: 'RDS Server' 
+    Value: !Ref RDSServer1
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSServer1'
+  RDSServer1PublicIp:
+    Description: Public IP of RDS Server 1
+    Value: 
+      'Fn::GetAtt':
+        - RDSServer1
+        - PublicIp
+  RDSServer2PublicIp:
+    Condition: 2RDSCondition
+    Description: Public IP of RDS Server 2
+    Value: 
+      'Fn::GetAtt':
+        - RDSServer2
+        - PublicIp
+  RDSServer3PublicIp:
+    Condition: 3RDSCondition
+    Description: Public IP of RDS Server 3
+    Value: 
+      'Fn::GetAtt':
+        - RDSServer3
+        - PublicIp
+  RDSServer4PublicIp:
+    Condition: 4RDSCondition
+    Description: Public IP of RDS Server 4
+    Value: 
+      'Fn::GetAtt':
+        - RDSServer4
+        - PublicIp
+  RDSServer5PublicIp:
+    Condition: 5RDSCondition
+    Description: Public IP of RDS Server 5
+    Value: 
+      'Fn::GetAtt':
+        - RDSServer5
+        - PublicIp
+  HANAServer:  
+    Description: 'HANA Server' 
+    Value: !Ref HANAServer
+    Export:
+      Name: !Sub '${AWS::StackName}-HANAServer'
+  HWINServer:  
+    Condition: NeedHWINServer
+    Description: 'HWIN Server' 
+    Value: !Ref HWINServer
+    Export:
+      Name: !Sub '${AWS::StackName}-HWINServer'
+  INTServer: 
+    Condition: NeedIntegrationServer
+    Description: 'Integration Server' 
+    Value: !Ref INTServer
+    Export:
+      Name: !Sub '${AWS::StackName}-INTServer'
+  
