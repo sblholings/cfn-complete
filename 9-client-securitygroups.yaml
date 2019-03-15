@@ -1,0 +1,388 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template will create Security Groups for RDS and Hana with options to also create Hwin and Int SG
+Parameters:
+  VPCStackName:
+    Description: >-
+      Name of an active CloudFormation stack that contains the VPC networking
+      resources..
+    Type: String
+    MinLength: '1'
+    MaxLength: '255'
+    AllowedPattern: '^[a-zA-Z][-a-zA-Z0-9]*$'
+          
+  EnvName:
+    Description: 'Client Name to tag resources with: Note must be lowercase!'
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-z]*'
+    ConstraintDescription: any alphabetic string (1-16) characters in length
+
+  IntegrationServer:
+    Description: Install (Yes) or don't install (No) Optional Integration Server.
+    Type: String
+    AllowedValues: 
+      - 'Yes'
+      - 'No'
+  HwindowsServer:
+    Description: Install (Yes) or don't install (No) Optional HWIN Server.
+    Type: String
+    AllowedValues: 
+      - 'Yes'
+      - 'No'
+Conditions: 
+  NeedIntegrationServer: !Equals
+    - !Ref IntegrationServer
+    - 'Yes'
+  NeedHWINServer: !Equals
+    - !Ref HwindowsServer
+    - 'Yes'
+Resources:
+  RDSSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Join 
+        - ''
+        - - 'RDS Security Group for '
+          - !Join 
+            - '-'
+            - - !Ref EnvName
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '3389'
+          ToPort: '3389'
+          CidrIp: 0.0.0.0/0
+      VpcId: !ImportValue 
+        'Fn::Sub': '${VPCStackName}-VpcId'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - '-'
+            - - !Ref EnvName
+              - rds
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  RDSSecurityGroupIngress1:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 40000
+      ToPort: 40000
+      SourceSecurityGroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group'
+
+  HANASecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    DependsOn: 
+    - RDSSecurityGroup
+    Properties:
+      VpcId: !ImportValue 
+        'Fn::Sub': '${VPCStackName}-VpcId'
+      GroupDescription: !Join 
+        - ''
+        - - 'HANA Security Group for '
+          - !Join 
+            - '-'
+            - - !Ref EnvName
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - '-'
+            - - !Ref EnvName
+              - hana
+        - Key: EnvName
+          Value: !Ref EnvName
+
+  HANASecurityGroupIngress1:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 1
+      ToPort: 65535
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group'
+  HANASecurityGroupIngress2:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: udp
+      FromPort: 4000
+      ToPort: 4002
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group'
+
+  HANASecurityGroupIngress3:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: udp
+      FromPort: 2049
+      ToPort: 2049
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group'
+    
+  HANASecurityGroupIngress4:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: udp
+      FromPort: 111
+      ToPort: 111
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group' 
+
+  HANASecurityGroupIngress5:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: icmp
+      FromPort: -1
+      ToPort: -1
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow ping traffic from ONLY RDS Security Group'    
+   
+  HANASecurityGroupIngress6:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 8080
+      ToPort: 8080
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group'    
+
+  HANASecurityGroupIngress7:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 8443
+      ToPort: 8443
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group'  
+      
+  HANASecurityGroupIngress8:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 1129
+      ToPort: 1129
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group' 
+
+  HANASecurityGroupIngress9:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 1128
+      ToPort: 1128
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY RDS Security Group' 
+  
+  HANASecurityGroupIngress10:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 22
+      ToPort: 22
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow SSH traffic from ONLY RDS Security Group'
+  
+  HANASecurityGroupIngress11:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 40000
+      ToPort: 40000
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow SSH traffic from ONLY RDS Security Group'
+
+  HANASecurityGroupIngress12:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 40001
+      ToPort: 40001
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow SSH traffic from ONLY RDS Security Group'
+
+  HANASecurityGroupIngress13:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 4300
+      ToPort: 4300
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow SSH traffic from ONLY RDS Security Group'
+
+  HANASecurityGroupIngress14:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 8000
+      ToPort: 8000
+      SourceSecurityGroupId: !GetAtt 
+        - RDSSecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      Description: 'Allow SSH traffic from ONLY RDS Security Group'
+  
+  HWINSecurityGroup:
+     Condition: NeedHWINServer
+     Type: 'AWS::EC2::SecurityGroup'
+     DependsOn: 
+     - HANASecurityGroup
+     Properties:
+       VpcId: !ImportValue 
+         'Fn::Sub': '${VPCStackName}-VpcId'
+       GroupDescription: !Join 
+         - ''
+         - - 'HWIN Security Group for '
+           - !Join 
+             - '-'
+             - - !Ref EnvName
+       Tags:
+         - Key: Name
+           Value: !Join 
+             - '-'
+             - - !Ref EnvName
+               - hwin
+         - Key: EnvName
+           Value: !Ref EnvName
+   
+  HWINSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !GetAtt 
+        - HANASecurityGroup
+        - GroupId
+      GroupId: !GetAtt 
+        - HWINSecurityGroup
+        - GroupId
+      Description: 'Allow Inbound traffic from ONLY HANA Security Group'
+
+  INTSecurityGroup:
+    Condition: NeedIntegrationServer
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Join 
+        - ''
+        - - 'INT Security Group for '
+          - !Join 
+            - '-'
+            - - !Ref EnvName
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '3389'
+          ToPort: '3389'
+          CidrIp: 0.0.0.0/0
+      VpcId: !ImportValue 
+        'Fn::Sub': '${VPCStackName}-VpcId'
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - '-'
+            - - !Ref EnvName
+              - int
+        - Key: EnvName
+          Value: !Ref EnvName
+
+
+Outputs: 
+  StackName: 
+    Value: !Ref AWS::StackName
+  RDSSecurityGroup:
+    Description: RDS Security Group created by this stack 
+    Value: !Ref RDSSecurityGroup 
+    Export: 
+      Name: !Sub '${AWS::StackName}-RDSSecurityGroup'
+  
+  HANASecurityGroup:
+    Description: Hana Security Group created by this stack 
+    Value: !Ref HANASecurityGroup 
+    Export: 
+      Name: !Sub '${AWS::StackName}-HANASecurityGroup'
+
+  HWINSecurityGroup:
+    Condition: NeedHWINServer
+    Description: Hwin Security Group created by this stack 
+    Value: !Ref HWINSecurityGroup 
+    Export: 
+      Name: !Sub '${AWS::StackName}-HWINSecurityGroup'
+
+  INTSecurityGroup:
+    Condition: NeedIntegrationServer
+    Description: Int Security Group created by this stack 
+    Value: !Ref INTSecurityGroup 
+    Export: 
+      Name: !Sub '${AWS::StackName}-INTSecurityGroup'
