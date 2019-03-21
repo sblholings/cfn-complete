@@ -121,9 +121,11 @@ Conditions:
   NeedIntegrationServer: !Equals
     - !Ref IntegrationServer
     - 'Yes'
+    - 'No'
   NeedHWINServer: !Equals
     - !Ref HwindowsServer
     - 'Yes'
+    - 'No'
 
   2RDSCondition: !Or
     - !Equals
