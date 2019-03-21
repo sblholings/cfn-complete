@@ -15,7 +15,11 @@ Metadata:
     - Label:
         default: 'VPC Parameters'
       Parameters:
-      - ClassB
+      - VpcCidr
+      - PublicSubnetAZ1
+      - PrivateSubnetAZ1
+      - PublicSubnetAZ2
+      - PrivateSubnetAZ2
     - Label:
         default: 'VPC Flow Log Parameters'
       Parameters:
@@ -102,13 +106,46 @@ Parameters:
     #- 'false'
     #Default: 'false'
     #Type: String
-  ClassB:
-    Description: 'Class B of VPC (10.XXX.0.0/16)'
-    Type: Number
-    Default: 0
-    ConstraintDescription: 'Must be in the range [0-255]'
-    MinValue: 0
-    MaxValue: 255
+  VpcCidr:
+    Description: 'Provide CIDR block for Customer eg 10.0.4.0/22)'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 10.0.4.0/22
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+  PublicSubnetAZ1:
+    Description: 'Provide CIDR block for Customers public subnet for AZ1'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 10.0.4.0/22
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+  PrivateSubnetAZ1:
+    Description: 'Provide CIDR block for Customers private subnet for AZ1'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 10.0.4.0/22
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+  PublicSubnetAZ2:
+    Description: 'Provide CIDR block for Customers public subnet for AZ2'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 10.0.4.0/22
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+  PrivateSubnetAZ2:
+    Description: 'Provide CIDR block for Customers private subnet for AZ2'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 10.0.4.0/22
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
   RetentionInDays:
     Description: 'Specifies the number of days you want to retain log events.'
     Type: Number
@@ -312,7 +349,11 @@ Resources:
     Properties:
       TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-client-templates/cfn-templates/1-client-vpc.yaml'
       Parameters: 
-        ClassB: !Ref ClassB
+        VpcCidr: !Ref VpcCidr
+        PublicSubnetAZ1: !Ref PublicSubnetAZ1
+        PrivateSubnetAZ1: !Ref PrivateSubnetAZ1
+        PublicSubnetAZ2: !Ref PublicSubnetAZ2
+        PrivateSubnetAZ2: !Ref PrivateSubnetAZ2
         EnvName: !Ref EnvName
       TimeoutInMinutes: '60'
 
