@@ -10,7 +10,7 @@ Mappings:
     us-east-2: #Ohio
       RDS: ami-019cbfce4a7f8847f
       INT: ami-019cbfce4a7f8847f
-      HANA: ami-0479b39f2d07530fb
+      HANA: ami-0f002b3eb2ae88f37
       HWIN: ami-019cbfce4a7f8847f
         
 Parameters:

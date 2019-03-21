@@ -1,0 +1,21 @@
+{
+    "ParameterKey": "VPC",
+    "ParameterValue": "vpc-425dde29"
+  }
+  {
+    "ParameterKey": "InternalSubnets",
+    "ParameterValue": [
+      "subnet-dd591bb6",
+      "subnet-8643f8fb",
+      "subnet-dd55cd90"
+    ]
+  }
+  {
+    "ParameterKey": "ExternalSubnets",
+    "ParameterValue": [
+      "subnet-dc591bb7",
+      "subnet-ca42f9b7",
+      "subnet-2e57cf63"
+    ]
+  }
+  
