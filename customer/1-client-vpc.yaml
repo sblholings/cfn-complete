@@ -11,7 +11,7 @@ Parameters:
     AllowedPattern: '[a-zA-Z]*'
     ConstraintDescription: any alphabetic string (1-16) characters in length
     Default: client
-  ClassB:
+  ClassA:
     Description: 'Class B of VPC (10.XXX.0.0/16)'
     Type: Number
     Default: 0
@@ -22,7 +22,7 @@ Resources:
   VPC:
     Type: 'AWS::EC2::VPC'
     Properties:
-      CidrBlock: !Sub '10.${ClassB}.0.0/16'
+      CidrBlock: !Sub '10.${ClassA}.0.0/16'
       EnableDnsSupport: true
       EnableDnsHostnames: true
       InstanceTenancy: default
@@ -51,7 +51,7 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       AvailabilityZone: !Select [0, !GetAZs '']
-      CidrBlock: !Sub '10.${ClassB}.0.0/20'
+      CidrBlock: !Sub '10.${ClassA}.0.0/20'
       MapPublicIpOnLaunch: true
       VpcId: !Ref VPC
       Tags:
@@ -69,7 +69,7 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       AvailabilityZone: !Select [0, !GetAZs '']
-      CidrBlock: !Sub '10.${ClassB}.16.0/20'
+      CidrBlock: !Sub '10.${ClassA}.16.0/20'
       VpcId: !Ref VPC
       Tags:
       - Key: Name
@@ -87,7 +87,7 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       AvailabilityZone: !Select [1, !GetAZs '']
-      CidrBlock: !Sub '10.${ClassB}.32.0/20'
+      CidrBlock: !Sub '10.${ClassA}.32.0/20'
       MapPublicIpOnLaunch: true
       VpcId: !Ref VPC
       Tags:
@@ -105,7 +105,7 @@ Resources:
     Type: 'AWS::EC2::Subnet'
     Properties:
       AvailabilityZone: !Select [1, !GetAZs '']
-      CidrBlock: !Sub '10.${ClassB}.48.0/20'
+      CidrBlock: !Sub '10.${ClassA}.48.0/20'
       VpcId: !Ref VPC
       Tags:
       - Key: Name
