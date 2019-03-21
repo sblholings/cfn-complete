@@ -295,27 +295,27 @@ Resources:
       Description: 'Allow SSH traffic from ONLY RDS Security Group'
   
   HWINSecurityGroup:
-     Condition: NeedHWINServer
-     Type: 'AWS::EC2::SecurityGroup'
-     DependsOn: 
-     - HANASecurityGroup
-     Properties:
-       VpcId: !ImportValue 
-         'Fn::Sub': '${VPCStackName}-VpcId'
-       GroupDescription: !Join 
-         - ''
-         - - 'HWIN Security Group for '
-           - !Join 
-             - '-'
-             - - !Ref EnvName
-       Tags:
-         - Key: Name
-           Value: !Join 
-             - '-'
-             - - !Ref EnvName
-               - hwin
-         - Key: EnvName
-           Value: !Ref EnvName
+    Condition: NeedHWINServer
+    Type: 'AWS::EC2::SecurityGroup'
+    DependsOn: 
+    - HANASecurityGroup
+    Properties:
+      VpcId: !ImportValue 
+        'Fn::Sub': '${VPCStackName}-VpcId'
+      GroupDescription: !Join 
+        - ''
+        - - 'HWIN Security Group for '
+          - !Join 
+            - '-'
+            - - !Ref EnvName
+      Tags:
+        - Key: Name
+          Value: !Join 
+            - '-'
+            - - !Ref EnvName
+              - hwin
+        - Key: EnvName
+          Value: !Ref EnvName
    
   HWINSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
