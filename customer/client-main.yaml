@@ -198,9 +198,9 @@ Parameters:
     Description: Select Instance Size 
 
   HANAStorageSize:  
-    Description : Disk Size for Hana DB 
+    Description : Disk Size for Hana DB in GB
     Type: Number
-    Default: 50
+    Default: 1000
 
   HWINServerType:
     Description: HWIN Instance Type
@@ -406,16 +406,16 @@ Resources:
         HwindowsServer: !Ref HwindowsServer
       TimeoutInMinutes: '60'
 
-  #ADStack:  
-    #Type: 'AWS::CloudFormation::Stack'
-    #Properties:
-      #TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-client-templates/cfn-templates/7-client-adservice.yaml'
-      #Parameters:
-        #MicrosoftADname: !Ref MicrosoftADname
-        #MicrosoftADpwd: !Ref MicrosoftADpwd
-        #MicrosoftADshortname: !Ref MicrosoftADshortname
-        #VPCStackName: !GetAtt VPC.Outputs.StackName
-      #TimeoutInMinutes: '60'
+  ADStack:  
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-client-templates/cfn-templates/7-client-adservice.yaml'
+      Parameters:
+        MicrosoftADname: !Ref MicrosoftADname
+        MicrosoftADpwd: !Ref MicrosoftADpwd
+        MicrosoftADshortname: !Ref MicrosoftADshortname
+        VPCStackName: !GetAtt VPC.Outputs.StackName
+      TimeoutInMinutes: '60'
 
 #  VPCPeering:
 #    Type: 'AWS::CloudFormation::Stack'
