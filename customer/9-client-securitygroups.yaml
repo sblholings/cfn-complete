@@ -318,6 +318,7 @@ Resources:
           Value: !Ref EnvName
    
   HWINSecurityGroupIngress:
+    Condition: NeedHWINServer
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
       IpProtocol: tcp
