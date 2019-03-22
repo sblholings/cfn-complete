@@ -96,6 +96,7 @@ Parameters:
     Description: HWIN Instance Type
     Type: String
     AllowedValues:
+      - t2.micro
       - t2.large
       - r4.large
       - r4.xlarge
@@ -106,6 +107,7 @@ Parameters:
     Description: Integration Instance Type
     Type: String
     AllowedValues:
+      - t2.micro
       - t2.large
       - r4.large
       - r4.xlarge
