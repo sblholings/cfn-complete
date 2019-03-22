@@ -154,7 +154,7 @@ Parameters:
   TrafficType:
     Description: 'The type of traffic to log.'
     Type: String
-    Default: REJECT
+    Default: ALL
     AllowedValues:
     - ACCEPT
     - REJECT
