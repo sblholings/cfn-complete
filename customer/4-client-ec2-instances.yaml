@@ -477,6 +477,7 @@ Resources:
         - Key: EnvName
           Value: !Ref EnvName
   INTServerEIP:
+    Condition: NeedIntegrationServer
     Type: 'AWS::EC2::EIP'
     Properties:
       InstanceId: !Ref INTServer
