@@ -1,6 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Provides nesting for required stacks to deploy a Production environment
-  with VPC, AD, RDS, SAP HANA, HWIN and option for INT Server
+Description: Provides nesting for required stacks to deploy a VPC and VPC flowlogs
   
 Metadata:
   'AWS::CloudFormation::Interface':
@@ -17,6 +16,11 @@ Metadata:
       - PrivateSubnetAZ1
       - PublicSubnetAZ2
       - PrivateSubnetAZ2
+    - Label:
+        default: 'VPC Flow Log Parameters'
+      Parameters:
+      - RetentionInDays
+      - TrafficType
         
     ParameterLabels:
       EnvName:
@@ -71,6 +75,19 @@ Parameters:
     ConstraintDescription: >-
       must be an IPv4 dotted quad plus slash plus network bit length in CIDR
       format
+  RetentionInDays:
+    Description: 'Specifies the number of days you want to retain log events.'
+    Type: Number
+    Default: 14
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653]
+  TrafficType:
+    Description: 'The type of traffic to log.'
+    Type: String
+    Default: ALL
+    AllowedValues:
+    - ACCEPT
+    - REJECT
+    - ALL
 
 Resources:
   VPC:
