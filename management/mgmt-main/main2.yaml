@@ -5,7 +5,7 @@ Metadata:
   'AWS::CloudFormation::Interface':
     ParameterGroups:
     - Label:
-        default: 'Name of the Management Account'
+        default: 'Name of the Environment'
       Parameters:
       - EnvName
     - Label:
