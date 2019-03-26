@@ -75,7 +75,7 @@ Resources:
   VPC:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-client-templates/cfn-templates/1-client-vpc.yaml'
+      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-templates/management-templates/1-management-vpc.yaml'
       Parameters: 
         VpcCidr: !Ref VpcCidr
         PublicSubnetAZ1: !Ref PublicSubnetAZ1
