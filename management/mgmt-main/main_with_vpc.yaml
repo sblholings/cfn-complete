@@ -20,10 +20,10 @@ Metadata:
         
     ParameterLabels:
       EnvName:
-        default: Name of the Client
+        default: Tag name 
 Parameters:
   EnvName:
-    Description: 'Client Name to tag resources with: Note must be lowercase!'
+    Description: 'Name to tag resources with: Note must be lowercase!'
     Type: String
     MinLength: '1'
     MaxLength: '16'
@@ -32,7 +32,7 @@ Parameters:
     Default: client
   
   VpcCidr:
-    Description: 'Provide CIDR block for Management VPC eg 10.0.4.0/22)'
+    Description: 'Provide CIDR block for VPC eg 10.0.4.0/22)'
     Type: String
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
     Default: 172.30.0.0/22
