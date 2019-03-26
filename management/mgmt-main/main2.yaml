@@ -1,0 +1,97 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Provides nesting for required stacks to deploy a Production environment
+  with VPC, AD, RDS, SAP HANA, HWIN and option for INT Server
+  
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+    - Label:
+        default: 'Name of the Management Account'
+      Parameters:
+      - EnvName
+    - Label:
+        default: 'VPC Parameters'
+      Parameters:
+      - VpcCidr
+      - PublicSubnetAZ1
+      - PrivateSubnetAZ1
+      - PublicSubnetAZ2
+      - PrivateSubnetAZ2
+        
+    ParameterLabels:
+      EnvName:
+        default: Tag name 
+Parameters:
+  EnvName:
+    Description: 'Name to tag resources with: Note must be lowercase!'
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-z]*'
+    ConstraintDescription: any alphabetic string (1-16) characters in length
+    Default: client
+  
+  VpcCidr:
+    Description: 'Provide CIDR block for VPC eg 10.0.4.0/22)'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 172.30.0.0/22
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+  PublicSubnetAZ1:
+    Description: 'Provide CIDR block for public subnet for AZ1'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 172.30.0.0/24                  
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+  PrivateSubnetAZ1:
+    Description: 'Provide CIDR block for Customers private subnet for AZ1'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 172.30.1.0/24
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+  PublicSubnetAZ2:
+    Description: 'Provide CIDR block for Customers public subnet for AZ2'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 172.30.2.0/24
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+  PrivateSubnetAZ2:
+    Description: 'Provide CIDR block for Customers private subnet for AZ2'
+    Type: String
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    Default: 172.30.3.0/24
+    ConstraintDescription: >-
+      must be an IPv4 dotted quad plus slash plus network bit length in CIDR
+      format
+
+Resources:
+  VPC:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-templates/management-templates/1-mvpc.yaml'
+      Parameters: 
+        VpcCidr: !Ref VpcCidr
+        PublicSubnetAZ1: !Ref PublicSubnetAZ1
+        PrivateSubnetAZ1: !Ref PrivateSubnetAZ1
+        PublicSubnetAZ2: !Ref PublicSubnetAZ2
+        PrivateSubnetAZ2: !Ref PrivateSubnetAZ2
+        EnvName: !Ref EnvName
+      TimeoutInMinutes: '60'
+
+  VPCFlowLogs:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-templates/management-templates/2-mvpcflowlogs.yaml'
+      Parameters:
+        VPCStackName: !GetAtt VPC.Outputs.StackName
+        RetentionInDays: !Ref RetentionInDays
+        TrafficType: !Ref TrafficType
+      TimeoutInMinutes: '60'
