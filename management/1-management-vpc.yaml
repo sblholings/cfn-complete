@@ -10,44 +10,39 @@ Parameters:
     MaxLength: '16'
     AllowedPattern: '[a-zA-Z]*'
     ConstraintDescription: any alphabetic string (1-16) characters in length
-    Default: client
   VpcCidr:
-    Description: 'Provide CIDR block for Customer eg 10.0.4.0/22)'
+    Description: 'Provide CIDR block eg 10.0.4.0/22)'
     Type: String
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
-    Default: 10.0.4.0/22
+    Default: 172.30.0.0/22
     ConstraintDescription: >-
       must be an IPv4 dotted quad plus slash plus network bit length in CIDR
       format
   PublicSubnetAZ1:
-    Description: 'Provide CIDR block for Customers public subnet for AZ1'
+    Description: 'Provide CIDR block for public subnet for AZ1'
     Type: String
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
-    Default: 10.0.4.0/24
     ConstraintDescription: >-
       must be an IPv4 dotted quad plus slash plus network bit length in CIDR
       format
   PrivateSubnetAZ1:
-    Description: 'Provide CIDR block for Customers private subnet for AZ1'
+    Description: 'Provide CIDR block for private subnet for AZ1'
     Type: String
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
-    Default: 10.0.5.0/24
     ConstraintDescription: >-
       must be an IPv4 dotted quad plus slash plus network bit length in CIDR
       format
   PublicSubnetAZ2:
-    Description: 'Provide CIDR block for Customers public subnet for AZ2'
+    Description: 'Provide CIDR block for public subnet for AZ2'
     Type: String
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
-    Default: 10.0.6.0/24
     ConstraintDescription: >-
       must be an IPv4 dotted quad plus slash plus network bit length in CIDR
       format
   PrivateSubnetAZ2:
-    Description: 'Provide CIDR block for Customers private subnet for AZ2'
+    Description: 'Provide CIDR block for private subnet for AZ2'
     Type: String
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
-    Default: 10.0.7.0/24
     ConstraintDescription: >-
       must be an IPv4 dotted quad plus slash plus network bit length in CIDR
       format
