@@ -16,7 +16,7 @@ Parameters:
     Type: String
     MinLength: 1
     MaxLength: 255
-    Default: 'stack name'
+    #Default: 'stack name'
   
   RetentionInDays:
     Description: 'Specifies the number of days you want to retain log events.'
