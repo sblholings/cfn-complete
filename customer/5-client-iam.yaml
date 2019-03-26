@@ -1,0 +1,85 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates Customer IAM Role
+
+Parameters:
+  VPCStackName: 
+    Description: 'Name of an active cloudformation stack taht contains the VPC Networking
+      resources, such as the route tables and subnets.'
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    Default: 'stack name'
+
+Resources: 
+  InstanceRole:
+      Type: 'AWS::IAM::Role'
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - ec2.amazonaws.com
+              Action:
+                - 'sts:AssumeRole'
+        Path: /
+        Policies:
+          - PolicyName: ApplicationPolicy
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - 'elastiCache:*'
+                    - 'ec2:*'
+                    - 'elasticloadbalancing:*'
+                    - 'autoscaling:*'
+                    - 'cloudwatch:*'
+                    - 's3:*'
+                    - 'sns:*'
+                    - 'cloudformation:*'
+                    - 'iam:AddRoleToInstanceProfile'
+                    - 'iam:CreateInstanceProfile'
+                    - 'iam:CreateRole'
+                    - 'iam:PassRole'
+                    - 'iam:ListInstanceProfiles'
+                  Resource: '*'
+    InstanceProfile:
+      Type: 'AWS::IAM::InstanceProfile'
+      Properties:
+        Path: /
+        Roles:
+          - !Ref InstanceRole
+
+Resources:
+  VpcPeerRole:
+    Type: 'AWS::IAM::Role'
+    DeletionPolicy: Delete
+    Properties:
+      RoleName: !Sub CrossAccount-VPCPeering
+      AssumeRolePolicyDocument:
+        Statement:
+          - Principal:
+              AWS:
+                - !Sub arn:aws:iam::099999999999:root
+                - !Sub arn:aws:iam::099999999999:root
+                - !Sub 'arn:aws:iam::099999999999:root'
+            Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'ec2:AcceptVpcPeeringConnection'
+                Resource: '*'
+    Outputs:
+      RoleARN:
+        Value: !GetAtt
+          - VpcPeerRole
+          - Arn
