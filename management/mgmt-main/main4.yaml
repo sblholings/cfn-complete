@@ -121,3 +121,14 @@ Resources:
         EnvName: !Ref EnvName
         VPCStackName: !GetAtt VPC.Outputs.StackName
       TimeoutInMinutes: '60'
+
+  SecurityGroups:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-templates/management-templates/4-msecuritygroups.yaml'
+      Parameters:
+        VPCStackName: !GetAtt VPC.Outputs.StackName
+        EnvName: !Ref EnvName
+        IntegrationServer: !Ref IntegrationServer
+        HwindowsServer: !Ref HwindowsServer
+      TimeoutInMinutes: '60'
