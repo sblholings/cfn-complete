@@ -67,7 +67,7 @@ Parameters:
     Description: 'Provide CIDR block for Customers private subnet for AZ2'
     Type: String
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
-    Default: 172.30.1.0/24
+    Default: 172.30.3.0/24
     ConstraintDescription: >-
       must be an IPv4 dotted quad plus slash plus network bit length in CIDR
       format
