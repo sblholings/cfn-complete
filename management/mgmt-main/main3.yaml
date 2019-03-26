@@ -112,3 +112,12 @@ Resources:
         RetentionInDays: !Ref RetentionInDays
         TrafficType: !Ref TrafficType
       TimeoutInMinutes: '60'
+
+  NATGateway :
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-templates/management-templates/3-mnatgateway.yaml'
+      Parameters:
+        EnvName: !Ref EnvName
+        VPCStackName: !GetAtt VPC.Outputs.StackName
+      TimeoutInMinutes: '60'
