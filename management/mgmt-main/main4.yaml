@@ -122,10 +122,10 @@ Resources:
         VPCStackName: !GetAtt VPC.Outputs.StackName
       TimeoutInMinutes: '60'
 
-  SecurityGroups:
+  mlogging:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
-      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-templates/management-templates/4-msecuritygroups.yaml'
+      TemplateURL: 'https://s3.us-east-2.amazonaws.com/sapphire-templates/management-templates/5-mlogging.yaml'
       Parameters:
         VPCStackName: !GetAtt VPC.Outputs.StackName
         EnvName: !Ref EnvName
