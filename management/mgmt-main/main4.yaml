@@ -129,6 +129,4 @@ Resources:
       Parameters:
         VPCStackName: !GetAtt VPC.Outputs.StackName
         EnvName: !Ref EnvName
-        IntegrationServer: !Ref IntegrationServer
-        HwindowsServer: !Ref HwindowsServer
       TimeoutInMinutes: '60'
